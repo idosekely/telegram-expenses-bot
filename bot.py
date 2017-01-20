@@ -41,7 +41,6 @@ class Bot(object):
         dp.add_handler(CommandHandler("register", self.register))
         dp.add_handler(CommandHandler("get", self.get))
         dp.add_handler(CommandHandler("debug", self.debug))
-        dp.add_handler(CommandHandler("expanses", self.expanses))
         dp.add_handler(MessageHandler(Filters.text, self.handle_message))
 
         # log all errors
