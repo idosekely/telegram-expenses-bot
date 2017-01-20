@@ -41,6 +41,7 @@ class Bot(object):
         dp.add_handler(CommandHandler("register", self.register))
         dp.add_handler(CommandHandler("get", self.get))
         dp.add_handler(CommandHandler("debug", self.debug))
+        dp.add_handler(CommandHandler("rename", self.rename))
         dp.add_handler(MessageHandler(Filters.text, self.handle_message))
 
         # log all errors
@@ -67,8 +68,14 @@ class Bot(object):
         self.expenses[user] = []
         update.message.reply_text('registered %s' % user)
 
+    def rename(self, bot, update):
+        chat_id = update.message.chat_id
+        old_user = self.get_user(update)
+        user = ' '.join(update.message.text.split()[1:])
+        self.users[chat_id] = self.users.pop(old_user)
+        self.expenses[user] = self.expenses.pop(old_user)
+
     def get_user(self, update):
-        print(update.message.chat_id)
         return self.users.get(update.message.chat_id, None)
 
     def _parse_text(self, txt):
@@ -90,7 +97,6 @@ class Bot(object):
         self.expenses[user].append([now, user, exp, body])
 
     def handle_message(self, bot, update):
-        print('serving')
         user = self.get_user(update)
         txt = update.message.text.split()
         self._create_entry(user, txt)
