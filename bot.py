@@ -69,9 +69,9 @@ class Bot(object):
 
     def rename(self, bot, update):
         chat_id = update.message.chat_id
-        old_user = self.get_user(update)
         user = ' '.join(update.message.text.split()[1:])
-        self.users[chat_id] = self.users.pop(old_user)
+        self.users.pop(chat_id)
+        self.users[chat_id] = user
 
     def get_user(self, update):
         return self.users.get(update.message.chat_id, None)
