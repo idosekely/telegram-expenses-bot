@@ -11,6 +11,7 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import logging
 import datetime
 from pprint import pprint
+import csv
 __author__ = 'sekely'
 
 # Enable logging
@@ -28,7 +29,6 @@ logger = logging.getLogger(__name__)
 class Bot(object):
 
     users = {}
-    expenses = {}
 
     def __init__(self, token):
         # Create the EventHandler and pass it your bot's token.
@@ -39,7 +39,6 @@ class Bot(object):
 
         # on different commands - answer in Telegram
         dp.add_handler(CommandHandler("register", self.register))
-        dp.add_handler(CommandHandler("get", self.get))
         dp.add_handler(CommandHandler("debug", self.debug))
         dp.add_handler(CommandHandler("rename", self.rename))
         dp.add_handler(MessageHandler(Filters.text, self.handle_message))
@@ -48,6 +47,7 @@ class Bot(object):
         dp.add_error_handler(self.error)
 
     def start_bot(self):
+        self._save_to_file(['date', 'user', 'price', 'details'])
         # Start the Bot
         self.updater.start_polling()
 
@@ -61,11 +61,10 @@ class Bot(object):
     def register(self, bot, update):
         chat_id = update.message.chat_id
         user = ' '.join(update.message.text.split()[1:])
-        if user in self.expenses:
+        if user in self.users.values():
             update.message.reply_text('user already exists')
             return
         self.users[chat_id] = user
-        self.expenses[user] = []
         update.message.reply_text('registered %s' % user)
 
     def rename(self, bot, update):
@@ -73,7 +72,6 @@ class Bot(object):
         old_user = self.get_user(update)
         user = ' '.join(update.message.text.split()[1:])
         self.users[chat_id] = self.users.pop(old_user)
-        self.expenses[user] = self.expenses.pop(old_user)
 
     def get_user(self, update):
         return self.users.get(update.message.chat_id, None)
@@ -94,19 +92,25 @@ class Bot(object):
         if not body or not exp:
             return
         now = str(datetime.date.today())
-        self.expenses[user].append([now, user, exp, body])
+        entry = [now, user, exp, body]
+        return entry
+
+    def _save_to_file(self, row=[]):
+        with open('expenses.csv', 'a', newline='') as csvfile:
+            writer = csv.writer(csvfile, delimiter=';')
+            writer.writerow(row)
+
 
     def handle_message(self, bot, update):
         user = self.get_user(update)
         txt = update.message.text.split()
-        self._create_entry(user, txt)
+        entry = self._create_entry(user, txt)
+        if entry:
+            self._save_to_file(entry)
 
-    def get(self, bot, update):
-        update.message.reply_text(str(self.expenses[self.get_user(update)]))
 
     def debug(self, bot, update):
         pprint(self.users)
-        pprint(self.expenses)
 
     def error(self, bot, update, error):
         pprint('Update "%s" caused error "%s"' % (update, error))
