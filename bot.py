@@ -12,6 +12,8 @@ import logging
 import datetime
 from pprint import pprint
 import csv
+from bidi import algorithm as bidialg
+
 __author__ = 'sekely'
 
 # Enable logging
@@ -85,6 +87,8 @@ class Bot(object):
         if str.isnumeric(txt[0]):
             exp = float(txt[0])
             body = ' '.join(txt[1:])
+        if body:
+            body = bidialg.get_display(body)
         return exp, body
 
     def _create_entry(self, user, txt):
