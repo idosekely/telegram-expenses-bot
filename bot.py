@@ -67,6 +67,7 @@ class Bot(object):
     def register(self, bot, update):
         chat_id = update.message.chat_id
         user = ' '.join(update.message.text.split()[1:])
+        user = bidialg.get_display(user)
         if user in self.users.values():
             update.message.reply_text('user already exists')
             return
@@ -76,6 +77,7 @@ class Bot(object):
     def rename(self, bot, update):
         chat_id = update.message.chat_id
         user = ' '.join(update.message.text.split()[1:])
+        user = bidialg.get_display(user)
         self.users.pop(chat_id)
         self.users[chat_id] = user
 
