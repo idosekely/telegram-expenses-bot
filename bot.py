@@ -107,7 +107,7 @@ class Bot(object):
 
     def _save_to_file(self, row=[], mode='a'):
         with open('expenses.csv', mode, newline='', encoding='utf-8') as csvfile:
-            writer = csv.writer(csvfile, delimiter=';')
+            writer = csv.writer(csvfile, delimiter=',')
             writer.writerow(row)
 
 
